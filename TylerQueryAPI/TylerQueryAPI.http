@@ -1,0 +1,6 @@
+@TylerQueryAPI_HostAddress = http://localhost:5285
+
+GET {{TylerQueryAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

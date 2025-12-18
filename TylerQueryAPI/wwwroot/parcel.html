@@ -1,0 +1,515 @@
+﻿<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Parcel Details</title>
+	<style>
+		:root {
+			--bg: #0b1220;
+			--card: #111b2e;
+			--muted: #93a4c7;
+			--text: #e9f0ff;
+			--line: #1C5CFF;
+			--accent: #2b69ff;
+		}
+
+		body {
+			margin: 0;
+			font-family: system-ui,Segoe UI,Arial;
+			background: var(--bg);
+			color: var(--text);
+		}
+
+		.wrap {
+			max-width: 1100px;
+			margin: 0 auto;
+			padding: 14px;
+		}
+
+		.top {
+			display: flex;
+			gap: 10px;
+			flex-wrap: wrap;
+			align-items: center;
+		}
+
+			.top input {
+				flex: 1;
+				min-width: 280px;
+				padding: 12px;
+				border-radius: 12px;
+				border: 1px solid var(--line);
+				background: #0f1930;
+				color: var(--text);
+			}
+
+			.top button {
+				padding: 12px 14px;
+				border: 0;
+				border-radius: 12px;
+				background: var(--accent);
+				color: white;
+				font-weight: 700;
+				cursor: pointer;
+			}
+
+		.grid {
+			display: grid;
+			grid-template-columns: 1fr 0.9fr;
+			gap: 16px;
+			margin-top: 16px;
+			align-items: start;
+		}
+
+		.card {
+			background: var(--card);
+			border: 1px solid var(--line);
+			border-radius: 16px;
+			padding: 14px;
+			position: relative;
+			margin:10px;
+		}
+
+		.h {
+			font-size: 12px;
+			color: var(--muted);
+			letter-spacing: .3px;
+			text-transform: uppercase;
+			margin-bottom: 8px;
+		}
+
+		.big {
+			font-size: 20px;
+			font-weight: 800;
+			margin: 0 0 6px;
+		}
+
+		.muted {
+			color: var(--muted);
+		}
+
+		.row {
+			display: flex;
+			justify-content: space-between;
+			gap: 12px;
+			padding: 10px 0;
+			border-top: 1px solid var(--line);
+		}
+
+			.row:first-of-type {
+				border-top: 0;
+				padding-top: 0;
+			}
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 14px;
+		}
+
+		th, td {
+			padding: 10px 8px;
+			border-bottom: 1px solid var(--line);
+			text-align: left;
+		}
+
+		th {
+			color: var(--muted);
+			font-weight: 700;
+		}
+
+		.status {
+			margin-top: 10px;
+			color: var(--muted);
+		}
+
+		.err {
+			color: #ffb4b4;
+		}
+
+		@media (max-width: 860px) {
+			.grid {
+				grid-template-columns: 1fr;
+			}
+		}
+
+		.photo-gallery {
+			background: #fff;
+			border-radius: 16px;
+			overflow: hidden;
+			box-shadow: 0 10px 24px rgba(0,0,0,.08);
+			position: relative;
+		}
+
+		.photo-hero-wrap {
+			position: relative;
+			background: #0b0f14;
+		}
+
+		.photo-hero-img {
+			width: 100%;
+			height: clamp(280px, 45vh, 520px);
+			object-fit: contain;
+			display: block;
+			background: #0b0f14;
+		}
+
+		.photo-nav-btn {
+			position: absolute;
+			top: 50%;
+			transform: translateY(-50%);
+			width: 44px;
+			height: 44px;
+			border: 0;
+			border-radius: 999px;
+			background: rgba(255,255,255,.85);
+			box-shadow: 0 6px 18px rgba(0,0,0,.2);
+			display: grid;
+			place-items: center;
+			font-size: 28px;
+			line-height: 1;
+		}
+
+		.photo-prev {
+			left: 12px;
+		}
+
+		.photo-next {
+			right: 12px;
+		}
+
+		.photo-nav-btn:hover {
+			background: rgba(255,255,255,.95);
+		}
+
+		.photo-counter {
+			position: absolute;
+			right: 12px;
+			bottom: 12px;
+			background: rgba(0,0,0,.55);
+			color: #fff;
+			padding: 6px 10px;
+			border-radius: 999px;
+			font-size: .9rem;
+			backdrop-filter: blur(6px);
+		}
+
+		.photo-thumb-strip {
+			display: flex;
+			gap: 10px;
+			overflow-x: auto;
+			padding: 12px;
+			border-top: 1px solid rgba(0,0,0,.06);
+			scroll-behavior: smooth;
+		}
+
+		.photo-thumb {
+			flex: 0 0 auto;
+			width: 96px;
+			height: 72px;
+			border-radius: 12px;
+			overflow: hidden;
+			cursor: pointer;
+			border: 2px solid transparent;
+			box-shadow: 0 6px 16px rgba(0,0,0,.08);
+			background: #e9eef3;
+		}
+
+			.photo-thumb img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				display: block;
+				transform: scale(1.02);
+			}
+
+			.photo-thumb.active {
+				border-color: #0d6efd;
+				box-shadow: 0 10px 22px rgba(13,110,253,.25);
+			}
+
+		.photo-empty {
+			padding: 14px 16px;
+			color: #6c757d;
+			text-align: center;
+		}
+
+		/* Preloader overlay */
+		.photo-loader {
+			position: absolute;
+			inset: 0;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			background: rgba(0,0,0,0.6);
+			backdrop-filter: blur(3px);
+			color: white;
+			font-size: 1rem;
+			z-index: 20;
+			border-radius: 12px;
+		}
+
+		.photo-spinner {
+			border: 4px solid rgba(255,255,255,0.25);
+			border-top: 4px solid #2b69ff;
+			border-radius: 50%;
+			width: 42px;
+			height: 42px;
+			animation: spin 0.9s linear infinite;
+			margin-bottom: 12px;
+		}
+
+		@keyframes spin {
+			from {
+				transform: rotate(0deg);
+			}
+
+			to {
+				transform: rotate(360deg);
+			}
+		}
+
+		.photo-loader-text {
+			opacity: 0.9;
+			font-weight: 600;
+			letter-spacing: 0.4px;
+		}
+
+		.d-none {
+			display: none !important;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="wrap">
+		<div id="status" class="status"></div>
+
+		<div class="grid">
+			<div class="left-column">
+				<div class="card">
+					<div class="h">Owners</div>
+					<div id="owners" class="muted">—</div>
+				</div>
+
+				<div class="card">
+					<div class="h">Property Info</div>
+					<div class="big" id="addr1">—</div>
+					<div class="muted" id="addr2">—</div>
+					<div class="row">
+						<div><div class="h">Lot Size</div><div id="lot">—</div></div>
+						<div><div class="h">Land Use</div><div id="use">—</div></div>
+					</div>
+					<div class="row">
+						<div><div class="h">Tax District</div><div id="td">—</div></div>
+						<div><div class="h">Exemption</div><div id="ex">—</div></div>
+					</div>
+					<div class="row"><div style="flex:1"><div class="h">Legal Description</div><div id="legal" class="muted">—</div></div></div>
+					<div class="row"><div style="flex:1"><div class="h">Buildings</div><div id="bldg" class="muted">—</div></div></div>
+				</div>
+
+				<div class="card">
+					<div class="h">Valuation & Taxable</div>
+					<div style="overflow:auto">
+						<table>
+							<thead>
+								<tr>
+									<th>Year</th>
+									<th>Total Market</th>
+									<th>Total Assessed</th>
+									<th>Total Taxable</th>
+								</tr>
+							</thead>
+							<tbody id="vals"><tr><td colspan="4" class="muted">—</td></tr></tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+
+			<!-- RIGHT COLUMN -->
+			<div class="card right-column">
+				<div id="photoGallery" class="photo-gallery" data-photos-endpoint="/api/tyler/parcel/{PID}/photos">
+					<!-- Preloader -->
+					<div id="photoLoader" class="photo-loader d-none">
+						<div class="photo-spinner"></div>
+						<div class="photo-loader-text">Loading photos...</div>
+					</div>
+
+					<div class="photo-hero-wrap">
+						<img id="photoHeroImg" class="photo-hero-img" alt="Selected property photo" />
+						<button type="button" class="photo-nav-btn photo-prev" id="photoPrevBtn" aria-label="Previous">‹</button>
+						<button type="button" class="photo-nav-btn photo-next" id="photoNextBtn" aria-label="Next">›</button>
+						<div class="photo-counter" id="photoCounter">0 / 0</div>
+					</div>
+
+					<div class="photo-thumb-strip" id="photoThumbStrip"></div>
+					<div class="photo-empty d-none" id="photoEmpty">No photos available for this parcel.</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+
+			const statusEl = document.getElementById("status");
+
+			function setStatus(msg, err=false){
+				statusEl.textContent=msg||"";
+			statusEl.className = "status" + (err ? " err" : "");
+	  }
+
+			function qs(name){
+	    return new URL(window.location.href).searchParams.get(name);
+	  }
+
+			async function getJson(url){
+	    const r = await fetch(url);
+			if(!r.ok) throw new Error(`HTTP ${r.status} from ${url}`);
+			return await r.json();
+	  }
+
+			function render(info){
+				document.getElementById("addr1").textContent=info.situsAddress||"—";
+			document.getElementById("addr2").textContent = info.situsCityStateZip || "—";
+			document.getElementById("lot").textContent = info.lotSize || "—";
+			document.getElementById("use").textContent = info.landUse || "—";
+			document.getElementById("td").textContent = info.taxDistrict || "—";
+			document.getElementById("ex").textContent = info.exemption || "—";
+			document.getElementById("legal").textContent = info.legalDescription || "—";
+
+			const b = (info.buildings || [])
+		 .map(x => `#${x.number}: ${x.livingArea||""} ${x.bedrooms||""}`.trim())
+			.join(" • ");
+			document.getElementById("bldg").textContent = b || "—";
+
+	    const o = (info.owners || []).map(x => `${x.name}${x.address? " — "+x.address:""}`);
+			document.getElementById("owners").innerHTML = o.length
+		 ? o.map(x=>`<div style="margin:8px 0">${x}</div>`).join("")
+			: "—";
+
+			const tbody = document.getElementById("vals");
+			tbody.innerHTML = "";
+	    (info.values || []).forEach(v => {
+		 const tr = document.createElement("tr");
+			tr.innerHTML = `<td>${v.year??""}</td><td>${v.totalMarket??""}</td><td>${v.totalAssessed??""}</td><td>${v.totalTaxable??""}</td>`;
+			tbody.appendChild(tr);
+	    });
+			if(!tbody.children.length) tbody.innerHTML = `<tr><td colspan="4" class="muted">—</td></tr>`;
+	  }
+
+			async function load(pid){
+	    if(!pid) return;
+			setStatus("Loading parcel info…");
+			try{
+		 const info = await getJson(`/api/tyler/parcel/${encodeURIComponent(pid)}`);
+			render(info);
+
+			setStatus("Loading photos…");
+			await loadPhotoCarousel(pid);
+			setStatus("");
+	    }catch(e){
+				console.error(e);
+			setStatus(e.message || "Failed.", true);
+	    }
+	  }
+
+			// Auto-load only (no input/button)
+			const pidFromQs = qs("pid") || qs("PID") || "";
+			if(pidFromQs){
+				load(pidFromQs);
+	  } else {
+				setStatus("No parcel id provided. Use ?pid=43-510-01-20-00-0-00-000",true);
+	  }
+
+
+	(function()
+	{
+	let urls=[]; let index=0;
+	const gallery=() => document.getElementById("photoGallery");
+	const heroImg=() => document.getElementById("photoHeroImg");
+	const thumbStrip=() => document.getElementById("photoThumbStrip");
+	const counter=() => document.getElementById("photoCounter");
+	const empty=() => document.getElementById("photoEmpty");
+	const loader=() => document.getElementById("photoLoader");
+
+	function setActive(i)
+	{
+	if(!urls.length) return;
+	index=(i+urls.length)%urls.length;
+	heroImg().src=urls[index];
+	counter().textContent=`${index+1} / ${urls.length}`;
+	[...thumbStrip().children].forEach((el,idx) =>
+	{
+	el.classList.toggle("active",idx===index);
+	if(idx===index) el.scrollIntoView({ behavior: "smooth",inline: "center",block: "nearest" });
+	});
+	}
+
+	function buildThumbs()
+	{
+	thumbStrip().innerHTML="";
+	urls.forEach((url,i) =>
+	{
+	const t=document.createElement("div");
+	t.className="photo-thumb"+(i===0? " active":"");
+	t.innerHTML=`<img src="${url}" alt="Thumbnail ${i+1}">`;
+	t.addEventListener("click",() => setActive(i));
+	thumbStrip().appendChild(t);
+	});
+	}
+
+	window.loadPhotoCarousel=async function(parcelIdRaw)
+	{
+	const parcelId=(parcelIdRaw||"").toString().replaceAll("-","").trim();
+	if(!parcelId) return;
+	const endpointTemplate=gallery()?.getAttribute("data-photos-endpoint")||"/api/tyler/parcel/{PID}/photos";
+	const endpoint=endpointTemplate.replace("{PID}",encodeURIComponent(parcelId));
+	urls=[]; index=0;
+	heroImg().removeAttribute("src");
+	thumbStrip().innerHTML="";
+	empty().classList.add("d-none");
+
+	loader()?.classList.remove("d-none"); // show loader
+	try
+	{
+	const resp=await fetch(endpoint,{ cache: "no-store" });
+	if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+	const data=await resp.json();
+	urls=Array.isArray(data.urls)? data.urls:[];
+	if(!urls.length)
+	{
+	empty().textContent="No photos available for this parcel.";
+	empty().classList.remove("d-none");
+	counter().textContent=`0 / 0`;
+	return;
+	}
+	buildThumbs();
+	setActive(0);
+	} catch(err)
+	{
+	console.error(err);
+	empty().textContent="Error loading photos.";
+	empty().classList.remove("d-none");
+	} finally
+	{
+	loader()?.classList.add("d-none"); // hide loader
+	}
+	};
+
+	document.addEventListener("click",e =>
+	{
+	if(e.target?.id==="photoPrevBtn") setActive(index-1);
+	if(e.target?.id==="photoNextBtn") setActive(index+1);
+	});
+	window.addEventListener("keydown",e =>
+	{
+	if(!urls.length) return;
+	if(e.key==="ArrowLeft") setActive(index-1);
+	if(e.key==="ArrowRight") setActive(index+1);
+	});
+	})();
+	</script>
+</body>
+</html>
